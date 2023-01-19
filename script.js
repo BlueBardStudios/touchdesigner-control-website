@@ -1,26 +1,37 @@
 let ws = new WebSocket('wss://test-server-app.herokuapp.com');
+window.onload = function () {
+  ws.onopen = function () {
+    ws.send(JSON.stringify({ 'page loaded': 1}));
+  };
+};
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+};
 
-let controllTD = document.querySelector('.controllTD') ;
-controllTD.addEventListener('input', (event) => {
-  ws.send(JSON.stringify({ 'slider1': controllTD.value / 100 }));
-}, false);
+document.getElementById("tick").addEventListener("change", function(){
+document.getElementById("sendData").addEventListener("change", function(){
+   var tick = this.checked ? "yes" : "no";
+});});
 
-let controlledByTD = document.querySelector('.controlledByTD');
-
+var uuid = getUrlParameter('UUID');
+document.getElementById("UUIDinput").value = uuid;
 let form = document.getElementById("form");
 form.addEventListener("submit", event => {event.preventDefault();
     const name = form.elements.name.value;
     const email = form.elements.email.value;
-    const data = { name, email };
+   
+    const uuid = form.elements.UUIDinput.value;
+    const data = { name, email, tick, uuid };
     ws.send(JSON.stringify(data));
   });
-
 ws.addEventListener('open', (event) => {
   console.log('Socket connection open');
   // alert('Successfully connected to socket server 🎉');
   ws.send('pong');
 });
-
 ws.addEventListener('message', (message) => {
   if (message && message.data) {
     if (message.data === "ping") {
@@ -38,14 +49,11 @@ ws.addEventListener('message', (message) => {
   }
   console.log("message", message)
 });
-
 ws.addEventListener('error', (error) => {
     console.error('Error in the connection', error);
     alert('error connecting socket server', error);
 });
-
 ws.addEventListener('close', (event) => {
     console.log('Socket connection closed');
     alert('closing socket server');
 });
-
